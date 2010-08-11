@@ -1,0 +1,356 @@
+<!-- Creator     : groff version 1.19.2 -->
+<!-- CreationDate: Wed Aug 11 08:22:20 2010 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p     { margin-top: 0; margin-bottom: 0; }
+       pre   { margin-top: 0; margin-bottom: 0; }
+       table { margin-top: 0; margin-bottom: 0; }
+</style>
+<title>SKI</title>
+
+</head>
+<body>
+
+<h1 align=center>SKI</h1>
+
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#AUTHOR">AUTHOR</a><br>
+<a href="#DIAGNOSTICS">DIAGNOSTICS</a><br>
+<a href="#BUGS">BUGS</a><br>
+
+<hr>
+
+
+<a name="NAME"></a>
+<h2>NAME</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">ski &minus; an
+unusual skiing simulation game</p>
+
+<a name="SYNOPSIS"></a>
+<h2>SYNOPSIS</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em"><b>ski</b></p>
+
+<a name="DESCRIPTION"></a>
+<h2>DESCRIPTION</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Imagine you are
+skiing down an infinite slope, facing such hazards as trees,
+ice, bare ground, and the Yeti, -- a horrible monster! Each
+turn moves you one screen row downhill. Unfortunately, you
+have to put your jet-powered skis on backwards, so you
+can&rsquo;t see ahead where you are going; only behind where
+you have been.</p>
+
+<p style="margin-left:11%; margin-top: 1em">However, you
+can turn to either side, jump or hop through the air,
+teleport through hyperspace, launch nuclear ICBMs, and cast
+spells to call the Fire Demon. And since the hazards occur
+in patches, you can skillfully out-maneuver them.</p>
+
+<p style="margin-left:11%; margin-top: 1em">You ski until
+something bad happens to you. Your final score is based on
+how far you have skiied, how many jumps you made, how many
+Yetis have melted during your run, and how healthy you are
+when are finished.</p>
+
+<p style="margin-left:11%; margin-top: 1em">These
+characters represent the things that you see on the slope
+behind you:</p>
+
+<table width="100%" border=0 rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p style="margin-top: 1em" valign="top">I</p></td>
+<td width="10%"></td>
+<td width="33%">
+
+
+<p style="margin-top: 1em" valign="top">This is where you
+are.</p> </td>
+<td width="45%">
+</td>
+</table>
+
+<p style="margin-left:11%;">This is normal snow -- always
+completely safe to ski on.</p>
+
+<table width="100%" border=0 rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p style="margin-top: 1em" valign="top">Y</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em" valign="top">These are trees. If
+you try to ski through trees, you might hit one and get
+hurt!</p> </td>
+</table>
+
+<p style="margin-left:11%;">A space represents bare ground
+with no snow on it. If you try to ski on <br>
+dirt, you could fall down....</p>
+
+<table width="100%" border=0 rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p style="margin-top: 1em" valign="top">#</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em" valign="top">This is ice. When
+you are on ice, you can&rsquo;t turn, and you might slip and
+fall down.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>A</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>This is the Yeti! As soon as he crawls out of a Snobank,
+he will lumber directly towards you at one space per turn,
+and if he gets within one space of you, he will grab you and
+beat you up! However, he has trouble moving through trees.
+Steer clear from the Yeti, and he will melt after a while,
+since it is a sunny day. If you jump over him, your
+jet-powered skis will help melt him. You can also melt him
+with nuclear ICBMs, or call the Fire Demon who will cook
+him, but once a Yeti melts, another one always shows up
+after a while. The Yeti doesn&rsquo;t understand about the
+edges of the slope either, so you can just cross them to get
+away from him! And since he is slower than you, you can try
+to ski right past him before he can grab you!</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>*</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>This represents a nuclear ICBM that you launched. You
+launch them from your backpack, and they zoom right at the
+Yeti.</p> </td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>D</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>This is the Fire Demon, who is always your friend unless
+you call him a bad name and he gets mad at you.</p></td>
+</table>
+
+<p style="margin-left:11%; margin-top: 1em">These are your
+commands. You can type any one of these letters when you
+have the &quot;?&quot; prompt on the end of the slope line,
+or just hit a return to do nothing this turn. Preceding any
+command with a number does that command repeatedly; thus,
+for example, &lsquo;&lsquo;4l&rsquo;&rsquo; is
+&lsquo;&lsquo;turn left 4 times&rsquo;&rsquo;.</p>
+
+<table width="100%" border=0 rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p style="margin-top: 1em" valign="top">r</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em" valign="top">Turn to the right.
+If you were going straight down, this will make you go one
+space to the right every turn. If you type &quot;R&quot;
+again, then you will go two spaces to the right every turn.
+If you type &quot;L&quot; the next turn, you will again be
+going one space to the right every turn. Remember that you
+can&rsquo;t turn when you are on ice, and if you go off the
+edge of the slope you come back into the other edge. You
+travel farther while you are going sideways, so you get a
+better score if you slalom to the side a lot, but you can
+never go sideways more than five spaces per turn.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>l</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Turn left. Exactly the same as turning right, but
+totally opposite.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>j</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Jump. When jumping, you don&rsquo;t have the
+&quot;?&quot; on the right for each line you jump over, so
+you can&rsquo;t enter a command for it. You can&rsquo;t
+fall, hit trees, or get grabbed by the Yeti while jumping,
+but you might land badly and get hurt. Since the Yeti moves
+one space toward you each turn, you have to be going at
+least two spaces per turn sideways to jump over him without
+getting grabbed when you land, but your jet-powered skis may
+melt the Yeti while you&rsquo;re jumping over him.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>h</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Hop. A hop is half a jump.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>t</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Teleport through hyperspace. This transports you to
+somewhere else on the slope, but you might materialize way
+up in the air and fall down.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>i</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Launch ICBM with nuclear warhead. If your backpack is
+working well, an ICBM will be launched from it towards the
+Yeti, travelling at three spaces per turn. Launching ICBMs
+is dangerous, but once one is going, it can&rsquo;t hurt
+you. If it is launched and loses its negative-infrared lock
+on the Yeti, it self-destructs.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>d</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Cast spell to summon the Fire Demon to this material
+plane. If the alternate universes are in a synchronous
+phase, the Fire Demon will appear somewhere on the slope,
+and move to attack the Yeti at one space per turn, but if
+something goes wrong while casting this spell, the Fire
+Demon might get mad and decide to go for you instead of the
+Yeti! If there is no Yeti around, the Fire Demon will soon
+get bored and go home. If you don&rsquo;t like where the
+Fire Demon showed up, you can try to recast this spell, so
+that he will appear somewhere else.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>!</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Spawn an invisible monster called a UNIX shell. You may
+type to the shell; it will do strange things with your
+input, opening a space warp in the middle of the ski-slope
+to display them at you. The shell monster is polite; when it
+is done, you will be deposited back on your slope exactly
+where you were before.</p></td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="1%">
+
+
+<p>?</p></td>
+<td width="10%"></td>
+<td width="78%">
+
+
+<p>Display command help.</p></td>
+</table>
+
+<p style="margin-left:11%; margin-top: 1em">Good luck, and
+happy skiing!</p>
+
+<a name="AUTHOR"></a>
+<h2>AUTHOR</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Mark Stevans,
+for Roy&rsquo;s Games, Inc. Python implementation, color
+support and the invisible shell monster by Eric S. Raymond
+&lt;esr@thyrsus.com&gt;.</p>
+
+<a name="DIAGNOSTICS"></a>
+<h2>DIAGNOSTICS</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">None.</p>
+
+<a name="BUGS"></a>
+<h2>BUGS</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">None known.</p>
+<hr>
+</body>
+</html>
