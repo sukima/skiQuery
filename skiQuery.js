@@ -94,7 +94,8 @@ SKI.colordict = {
     demon:   'red'
 };
 
-SKI.game_over = false;
+// Gaurds against infinate loops.
+SKI.max_recursion_level = 20;
 
 // Section: Global functions {{{1
 // Function: random(min, max) {{{2
@@ -111,7 +112,7 @@ SKI.percent = function(X) {
 
 // Function: exists(X) {{{2
 SKI.exists = function(X) {
-    return X !== null;
+    return X && X !== null;
 };
 
 // Function: show_doc() {{{2
@@ -131,13 +132,24 @@ SKI.cmd_prompt = function(p) {
 
 // Function: print(msg) {{{2
 SKI.print = function(msg) {
-    // TODO:
+    if ( SKI.exists(SKI.run_state.console) )
+        SKI.run_state.console.append("<span class=\"ski-text\">" + msg + "</span><br />");
+};
+
+// Function: printSlope(line) {{{2
+SKI.printSlope = function(line) {
+    if ( SKI.exists(SKI.run_state.ski_slope) )
+        SKI.run_state.ski_slope.append(
+            "<li class=\"ski-slope-line\"><span class=\"ski-terrain\">"
+            + msg + "</span><span class=\"ski-prompt\">" + p
+            + "</span>&nbsp;<span class=\"ski-prompt-input\"></span></li>");
 };
 
 // Function: exit(code) {{{2
-// Always return with this method.
-SKI.exit = function(code) {
-    SKI.game_over = true;
+// You can `return SKI.exit()` to step back out of the run loop.
+// JavaScript has no exit/run loop since it is event based.
+SKI.exit = function() {
+    // TODO: end game
     return false;
 };
 
@@ -176,9 +188,6 @@ SKI.SkiWorld = function() {
     this.icbm_pos = null;
     this.demon_pos = null;
 
-    // Set the player position.
-    this.player_pos = that.teleport()
-
     // Initialize the line with snow.
     this.slope = new Array(SKI.line_len);
     for (var i=0; i < SKI.line_len; i++)
@@ -195,7 +204,7 @@ SKI.SkiWorld = function() {
     // Function: terrain() {{{2
     this.terrain = function() {
         // What kind of terrain are we on?
-        return that.slope[that.player_pos]);
+        return that.slope[that.player_pos];
     };
 
     // Function: nearby(pos, min) {{{2
@@ -398,8 +407,8 @@ SKI.SkiWorld = function() {
         }
     };
 
-    // Function: toString() {{{2
-    this.toString = function() {
+    // Function: getPicture() {{{2
+    this.getPicture = function() {
         // Create a picture of the current level.
         var picture = that.slope.slice();
         picture[that.player_pos] = SKI.rep.player;
@@ -409,8 +418,23 @@ SKI.SkiWorld = function() {
             picture[that.demon_pos] = SKI.rep.demon;
         if ( SKI.exists(that.icbm_pos) )
             picture[that.icbm_pos] = SKI.rep.icbm;
-        picture = SKI.colorize(picture);
-        var str = "" + that.level_num;
+        return picture;
+    };
+
+    // Function: toHTML() {{{2
+    this.toHTML = function() {
+        var picture = that.getPicture();
+        var html = "";
+        for (var i=0; i < picture.length; i++)
+        {
+            html += SKI.colorize(picture[i]);
+        }
+        return html;
+    };
+
+    // Function: toString() {{{2
+    this.toString = function() {
+        var picture = that.getPicture();
         for (var i=0; i < picture.length; i++)
         {
             str += picture[i];
@@ -418,6 +442,9 @@ SKI.SkiWorld = function() {
         return str;
     };
     // }}}2
+
+    // Set the player position.
+    this.player_pos = this.teleport();
 
 };
 
@@ -474,7 +501,7 @@ SKI.SkiPlayer = function() {
         SKI.print("Your score for this run is " + score + ".");
 
         // Exit the game with a code indicating successful completion.
-        return SKI.exit(0);
+        return SKI.exit();
     };
 
     // Function: check_obstacles(world) {{{2
@@ -577,7 +604,64 @@ SKI.SkiPlayer.injuries = [
 
 
 // Main run loop {{{1
-SKI.run = function() {
+// These functions are public.
+// Run state can be hacked.
+// Play nice. Cheating seems silly.
+SKI.run_state = {
+    repeat: 1,
+    world: null,
+    player: null,
+    console: null,
+    ski_slope: null
+};
+
+SKI.run_loop = function() {
+    // If we are jumping, just finish the line.  Otherwise, check for
+    // obstacles, and do a command.
+    if ( SKI.run_state.player.jump_count >= 0 )
+    {
+        // Continue to next loop.
+        // (Using loop_gaurd just in case of bad programming)
+        if ( SKI.run_state.loop_gaurd < SKI.max_recursion_level )
+        {
+            SKI.run_state.loop_gaurd++;
+            SKI.run_loop();
+            SKI.run_state.loop_gaurd--;
+        }
+        return;
+    }
+    else
+    {
+        SKI.run_state.player.check_obstacles(SKI.run_state.world);
+
+        SKI.run_state.world.manipulate_objects(SKI.run_state.player);
+        SKI.run_state.world.update_level(SKI.run_state.player);
+        SKI.run_state.player.update_player();
+    }
+};
+
+SKI.run = function(div) {
+    if ( !SKI.exists(div) )
+        div = $(document.body);
+
+    SKI.run_state.repeat = 1;
+    SKI.run_state.world = new SKI.SkiWorld();
+    SKI.run_state.player = new SKI.SkiPlayer();
+
+    // Create the <pre/> for the text output.
+    SKI.run_state.console = $("<tt id=\"ski-console\" />");
+    // Create the <ol/> for the slope text.
+    SKI.run_state.ski_slope = $("<ol id=\"ski-slope\" />");
+
+    SKI.run_state.console.append(SKI.run_state.ski_slope);
+    $(div).empty().append(SKI.run_state.console);
+
+    SKI.print("SKI!  Version " + SKI.portVersion + ". Type ? for help.");
+    SKI.print("skiQuery port version " + SKI.version + ". by Devin Weaver");
+
+    // Button press or initial start
+    //   print out <li>picture</li><text input>
+    SKI.run_loop();
 };
 // }}}1
 
