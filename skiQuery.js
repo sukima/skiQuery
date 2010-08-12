@@ -94,6 +94,8 @@ SKI.colordict = {
     demon:   'red'
 };
 
+SKI.game_over = false;
+
 // Section: Global functions {{{1
 // Function: random(min, max) {{{2
 SKI.random = function(min, max) {
@@ -110,6 +112,40 @@ SKI.percent = function(X) {
 // Function: exists(X) {{{2
 SKI.exists = function(X) {
     return X !== null;
+};
+
+// Function: show_doc() {{{2
+SKI.show_doc = function() {
+    // TODO:
+};
+
+// Function: console(cmdline) {{{2
+SKI.console = function(cmdline) {
+    // TODO:
+};
+
+// Function: cmd_prompt(p) {{{2
+SKI.cmd_prompt = function(p) {
+    // TODO:
+};
+
+// Function: print(msg) {{{2
+SKI.print = function(msg) {
+    // TODO:
+};
+
+// Function: exit(code) {{{2
+// Always return with this method.
+SKI.exit = function(code) {
+    SKI.game_over = true;
+    return false;
+};
+
+// Function: colorize(picture) {{{2
+SKI.colorize = function(picture) {
+    // Colorize special characters in a display list.
+    // TODO:
+    return picture;
 };
 
 
@@ -389,14 +425,159 @@ SKI.SkiWorld = function() {
 // Class: SkiPlayer {{{1
 SKI.SkiPlayer = function() {
     var that = this;
+
+    // Instance variables {{{2
+    this.jump_count = -1;
+    this.num_snomen_melted = 0;
+	this.num_jumps_attempted = 0.0;
+	this.player_speed = 0;
+	this.meters_travelled = 0;
+
+    // Function: accident(msg, severity) {{{2
+    this.accident = function(msg, severity) {
+        // "accident()" is called when the player gets into an accident(),
+        // which ends the game.  "msg" is the description of the accident()
+        // type, and "severity" is the severity.  This function should never
+        // return. Compute the degree of the player's injuries.
+        var degree = severity + SKI.random(0, SKI.injury_randomness - 1);
+
+        // Print a message indicating the termination of the game.
+        SKI.cmd_prompt("!");
+        SKI.print(msg + "  " + SKI.SkiPlayer.injuries[degree]);
+    
+        // Print the statistics of the game.
+        SKI.print("You skiied " + that.meters_travelled +
+            " meters with " + that.num_jumps_attempted +
+            " jumps and melted " + that.num_snomen_melted +
+            ((that.num_snomen_melted != 1) ? "Yetis" : "Yeti") + ".");
+
+        // Initially calculate the player's score based upon the number of
+        // meters travelled.
+        var score = that.meters_travelled * SKI.points_per_meter;
+
+        // Add bonus points for the number of jumps completed.
+        score += that.num_jumps_attempted * SKI.points_per_jump;
+
+        // Add bonus points for each Yeti that melted during the course of
+        // the game.
+        score += that.num_snomen_melted * SKI.points_per_melted_yeti;
+
+        // Subtract a penalty for the degree of injury experienced by the
+        // player.
+        score += degree * SKI.points_per_injury_degree;
+
+        // Negative scores are just too silly.
+        if ( score < 0 )
+            score = 0;
+
+        // Print the player's score.
+        SKI.print("Your score for this run is " + score + ".");
+
+        // Exit the game with a code indicating successful completion.
+        return SKI.exit(0);
+    };
+
+    // Function: check_obstacles(world) {{{2
+    this.check_obstacles = function(world) {
+        // If we are just landing after a jump, we might fall down.
+        if ( (that.jump_count == 0) && SKI.percent(SKI.prob_bad_landing) )
+            return that.accident("Whoops!  A bad landing!", SKI.light_injury);
+
+        // If there is a tree in our position, we might hit it.
+        if ( (world.terrain() == SKI.rep.tree) && SKI.percent(SKI.prob_hit_tree) )
+            return that.accident("Oh no!  You hit a tree!", SKI.severe_injury);
+
+        // If there is bare ground under us, we might fall down.
+        if ( (world.terrain() == SKI.rep.ground) && SKI.percent(SKI.prob_fall_on_ground) )
+            return that.accident("You fell on the ground!", SKI.moderate_injury);
+
+        // If we are on ice, we might slip.
+        if ( (world.terrain() == SKI.rep.ice) && SKI.percent(SKI.prob_slip_on_ice) )
+            return that.accident("Oops!  You slipped on the ice!", SKI.slight_injury);
+
+        // If there is a Yeti next to us, he may grab us.
+        if ( world.nearby(world.yeti) )
+            return that.accident("Yikes!  The Yeti's got you!", SKI.moderate_injury);
+    };
+
+    // Function: update_player() {{{2
+    this.update_player = function() {
+        // Update state of player for current move.
+        that.meters_travelled += Math.abs(that.player_speed) + 1;
+        // If the player was jumping, decrement the jump count.
+        if ( that.jump_count >= 0 )
+            that.jump_count -= 1;
+    };
+
+    // Function: do_command(world, cmdline) {{{2
+    this.do_command = function(world, cmdline) {
+        // Print a prompt, and read a command.  Return True to advance game.
+        switch ( cmdline.charAt(0).toUpperCase() )
+        {
+            case '?':
+                SKI.show_doc();
+                return false;
+            case '!':
+                SKI.console(cmdline.substring(1));
+                return false;
+            case 'R':  // Move right
+                if ( (world.terrain() != SKI.rep.ice)
+                        && (that.player_speed < SKI.max_horizontal_player_speed) )
+                    that.player_speed += 1;
+                return true;
+            case 'L':  // Move left
+                if ( (world.terrain() != SKI.rep.ice)
+                        && (that.player_speed > -SKI.max_horizontal_player_speed) )
+                    that.player_speed -= 1;
+                return true;
+            case 'J':  // Jump
+                that.jump_count = SKI.random(0, 5) + 4;
+                that.num_jumps_attempted += 1.0;
+                return true;
+            case 'H':  // Do a hop
+                that.jump_count = SKI.random(0, 2) + 2;
+                that.num_jumps_attempted += 0.5;
+                return true;
+            case 'T':  // Attempt teleportation
+                if ( SKI.percent(SKI.prob_bad_teleport) )
+                    return that.accident("You materialized 25 feet in the air!", SKI.slight_injury);
+                world.player_pos = world.teleport();
+                return true;
+            case 'I':  // Launch backpack ICBM
+                if ( SKI.percent(SKI.prob_bad_icbm) )
+                    return that.accident("Nuclear blast in your backpack!", SKI.severe_injury);
+                world.icbm_pos = world.player_pos;
+                return true;
+            case 'D':  // Incant spell for fire demon
+                if ( SKI.percent(SKI.prob_bad_spell) )
+                    return that.accident("A bad spell -- the demon grabs you!", SKI.moderate_injury);
+                world.demon_pos = world.teleport();
+                return true;
+            default:
+                // Any other command just advances
+                return true;
+        }
+    };
 };
 
+// Class variables {{{2
+SKI.SkiPlayer.injuries = [
+    "However, you escaped injury!", 
+    "But you weren't hurt at all!", 
+    "But you only got a few scratches.", 
+    "You received some cuts and bruises.", 
+    "You wind up with a concussion and some contusions.", 
+    "You now have a broken rib.", 
+    "Your left arm has been fractured.",
+    "You suffered a broken ankle.",
+    "You have a broken arm and a broken leg.", 
+    "You have four broken limbs and a cut!", 
+    "You broke every bone in your body!", 
+    "I'm sorry to tell you that you have been killed...."];
 
-// Function: colorize(picture) {{{1
-SKI.colorize = function(picture) {
-    // TODO: Colorize the output.
-    // Do nothing for now.
-    return picture;
+
+// Main run loop {{{1
+SKI.run = function() {
 };
 // }}}1
 
