@@ -94,8 +94,6 @@ SKI.colordict = {
     demon:   'red'
 };
 
-// Gaurds against infinate loops.
-SKI.max_recursion_level = 20;
 
 // Section: Global functions {{{1
 // Function: random(min, max) {{{2
@@ -141,22 +139,36 @@ SKI.printSlope = function(world) {
     if ( SKI.exists(SKI.run_state.ski_slope) )
         SKI.run_state.ski_slope.append(
             "<li class=\"ski-slope-line\"><span class=\"ski-terrain\">"
-            + world.toHTML() + "</span></li>");
-            //+ "</span>&nbsp;<span class=\"ski-prompt-input\"></span></li>");
+            + world.toHTML() + "</span>" +
+            "<span class=\"ski-prompt\"></span>&nbsp;" +
+            "<span class=\"ski-prompt-input\"></span></li>");
 };
 
 // Function: printPrompt(p) {{{2
 SKI.printPrompt = function(p) {
+    if ( !SKI.exists(p) )
+        p = '?';
     if ( SKI.exists(SKI.run_state.ski_slope) )
-        $(".ski-slipe-line", SKI.run_state.ski_slope).append(
-            "<span class=\"ski-prompt\">" + p + "</span>");
+        $(".ski-prompt:last", SKI.run_state.ski_slope).html(p);
+};
+
+//Function: printInputPrompt() {{{2
+SKI.printInputPrompt = function() {
+    if ( SKI.exists(SKI.run_state.input) )
+    {
+        // Will move the input field to the correct place.
+        $(".ski-prompt-input:last").append(SKI.run_state.input);
+        // Reenable the field.
+        SKI.run_state.input.removeAttr("disabled");
+        SKI.run_state.input.val("").focus();
+    }
 };
 
 // Function: exit(code) {{{2
 // You can `return SKI.exit()` to step back out of the run loop.
 // JavaScript has no exit/run loop since it is event based.
 SKI.exit = function() {
-    // TODO: end game
+    SKI.run_state.input.remove();
     return false;
 };
 
@@ -298,8 +310,8 @@ SKI.SkiWorld = function() {
         // addition.  Note that we must add the line length into the
         // expression before taking the modulus to make sure that we
         // are not taking the modulus of a negative integer.
-        that.player_pos = (that.player_pos + player.player_speed +
-            that.slope.length % that.slope.length);
+        that.player_pos = ((that.player_pos + player.player_speed +
+            that.slope.length) % that.slope.length);
 
         // Generate the updated slope.
         that.gen_next_slope();
@@ -483,7 +495,7 @@ SKI.SkiPlayer = function() {
         SKI.print("You skiied " + that.meters_travelled +
             " meters with " + that.num_jumps_attempted +
             " jumps and melted " + that.num_snomen_melted +
-            ((that.num_snomen_melted != 1) ? "Yetis" : "Yeti") + ".");
+            ((that.num_snomen_melted != 1) ? " Yetis" : " Yeti") + ".");
 
         // Initially calculate the player's score based upon the number of
         // meters travelled.
@@ -548,6 +560,8 @@ SKI.SkiPlayer = function() {
     // Function: do_command(world, cmdline) {{{2
     this.do_command = function(world, cmdline) {
         // Print a prompt, and read a command.  Return True to advance game.
+        if ( !SKI.exists(cmdline) )
+            cmdline = " ";
         switch ( cmdline.charAt(0).toUpperCase() )
         {
             case '?':
@@ -622,52 +636,60 @@ SKI.run_state = {
     console: null,
     ski_slope: null,
     input: null,
-    loop_gaurd: 0
 };
 
-// Function: recurse() {{{2
-SKI.recurse = function() {
-    // Using loop_gaurd just in case of bad programming.
-    if ( SKI.run_state.loop_gaurd < SKI.max_recursion_level )
-    {
-        SKI.run_state.loop_gaurd++;
-        SKI.run_loop();
-        SKI.run_state.loop_gaurd--;
-    }
-    else
-        SKI.print("Error: Max recursion depth met.");
-};
-
-// Function: run_loop() {{{2
-SKI.run_loop = function() {
-    SKI.printSlope(SKI.run_state.world);
-
-    // If we are jumping, just finish the line.  Otherwise, check for
-    // obstacles, and do a command.
-    if ( SKI.run_state.player.jump_count >= 0 )
-    {
-        // Continue to next loop.
-        SKI.recurse();
-    }
-    else
-    {
-        if ( !SKI.run_state.player.check_obstacles(SKI.run_state.world) )
-            return;
-
-        if ( SKI.run_state.repeat > 1 )
-            SKI.run_state.repeat -= 1;
-        if ( SKI.run_state.repeat > 1 )
-            SKI.recurse();
-
-        // TODO: build cmd
-
-        if ( !SKI.run_state.player.do_command(SKI.run_state.world, cmd) )
-            return;
-    }
-
+// Function: run_update(cmd) {{{2
+SKI.run_update = function(cmd) {
+    if ( !SKI.run_state.player.do_command(SKI.run_state.world, cmd) )
+        return;
     SKI.run_state.world.manipulate_objects(SKI.run_state.player);
     SKI.run_state.world.update_level(SKI.run_state.player);
     SKI.run_state.player.update_player();
+};
+
+// Function: run_trigger() {{{2
+SKI.run_trigger = function() {
+    // Disable field to prevent further input.
+    SKI.run_state.input.attr("disabled","disabled");
+
+    var cmd = SKI.run_state.input.val();
+
+    // Freeze former command.
+    $(".ski-prompt-input:last").append(cmd);
+    
+    // Repeat logic
+    if ( cmd > 0 ) // Check if number
+    {
+        cmd = cmd * 1; // Convert to number
+        for (var x=0; x < cmd; x++)
+        {
+            SKI.run_update(null);
+            SKI.printSlope(SKI.run_state.world);
+            if ( !SKI.run_state.player.check_obstacles(SKI.run_state.world) )
+                return;
+        }
+    }
+    else
+    {
+        SKI.run_update(cmd);
+        SKI.printSlope(SKI.run_state.world);
+        
+        // If we are jumping, just finish the line.  Otherwise, check for
+        // obstacles, and do a command.
+        while ( SKI.run_state.player.jump_count >= 0 )
+        {
+            SKI.run_update(null);
+            SKI.printSlope(SKI.run_state.world);
+            // Don't check for obstacles till the end
+        }
+
+        if ( !SKI.run_state.player.check_obstacles(SKI.run_state.world) )
+            return;
+    }
+
+    // Turn is done.
+    SKI.printPrompt();
+    SKI.printInputPrompt();
 };
 
 // Function: run() {{{2
@@ -676,6 +698,7 @@ SKI.run = function(div) {
         div = $(document.body);
 
     SKI.run_state.repeat = 1;
+    SKI.run_state.command = null;
     SKI.run_state.loop_gaurd = 0;
     SKI.run_state.world = new SKI.SkiWorld();
     SKI.run_state.player = new SKI.SkiPlayer();
@@ -686,14 +709,24 @@ SKI.run = function(div) {
     SKI.run_state.ski_slope = $("<ol id=\"ski-slope\" />");
     // Create the input text field.
     SKI.run_state.input = $("<input id=\"ski-input\" type=\"text\" size=\"3\" />");
+    SKI.run_state.input.keypress(function (event) {
+        if ( event.keyCode == "13" )
+        {
+            event.preventDefault();
+            SKI.run_trigger();
+        }
+    });
 
-    SKI.run_state.console.append(SKI.run_state.ski_slope);
     $(div).empty().append(SKI.run_state.console);
 
     SKI.print("SKI!  Version " + SKI.portVersion + ". Type ? for help.");
-    SKI.print("skiQuery port version " + SKI.version + ". by Devin Weaver");
+    SKI.print("skiQuery port version " + SKI.version + " by Devin Weaver");
 
-    SKI.run_loop();
+    SKI.run_state.console.append(SKI.run_state.ski_slope);
+
+    SKI.printSlope(SKI.run_state.world);
+    SKI.printPrompt();
+    SKI.printInputPrompt();
 };
 // }}}1
 
