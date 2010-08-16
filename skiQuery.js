@@ -152,21 +152,21 @@ SKI.show_doc = function() {
     str += "</dl>";
     $("tt", doc).append(str);
 
-    var input = $("<input type=\"button\" />");
-    input.click(function() {
-        doc.hide();
-    });
-
-    doc.append(input);
-
+    /*
     if ( false )
     {
         // TODO: jQuery-ui popup
+
+        var input = $("<input type=\"button\" />");
+        input.click(function() {
+            doc.hide();
+        });
+
+        doc.append(input);
     }
     else
-    {
-        SKI.print(doc);
-    }
+        */
+    SKI.print(doc, true);
 };
 
 // Function: console(cmdline) {{{2
@@ -175,9 +175,17 @@ SKI.console = function(cmdline) {
 };
 
 
-// Function: print(msg) {{{2
-SKI.print = function(msg) {
-    if ( SKI.exists(SKI.run_state.console) )
+// Function: print(msg,inline) {{{2
+SKI.print = function(msg,inline) {
+    if ( typeof(msg) == 'string' )
+        msg += "<br />";
+
+    if ( inline && SKI.run_state.ski_slope )
+    {
+        SKI.run_state.ski_slope.append("<span class=\"ski-text\" />");
+        $("span.ski-text:last", SKI.run_state.ski_slope).append(msg);
+    }
+    else if ( SKI.exists(SKI.run_state.console) )
     {
         SKI.run_state.console.append("<span class=\"ski-text\" />");
         $("span.ski-text:last", SKI.run_state.console).append(msg);
@@ -218,6 +226,7 @@ SKI.printInputPrompt = function() {
 // You can `return SKI.exit()` to step back out of the run loop.
 // JavaScript has no exit/run loop since it is event based.
 SKI.exit = function() {
+    SKI.run_state.end_game = true;
     SKI.run_state.input.remove();
     return false;
 };
@@ -692,6 +701,7 @@ SKI.SkiPlayer.injuries = [
 // Cheating seems silly.
 SKI.run_state = {
     repeat: 1,
+    end_game: false,
     world: null,
     player: null,
     console: null,
@@ -702,7 +712,7 @@ SKI.run_state = {
 // Function: run_update(cmd) {{{2
 SKI.run_update = function(cmd) {
     if ( !SKI.run_state.player.do_command(SKI.run_state.world, cmd) )
-        return;
+        return false;
     SKI.run_state.world.manipulate_objects(SKI.run_state.player);
     SKI.run_state.world.update_level(SKI.run_state.player);
     SKI.run_state.player.update_player();
@@ -725,7 +735,11 @@ SKI.run_trigger = function() {
         for (var x=0; x < cmd; x++)
         {
             SKI.run_update(null);
+            if ( SKI.run_state.end_game )
+                return
+
             SKI.printSlope(SKI.run_state.world);
+
             if ( !SKI.run_state.player.check_obstacles(SKI.run_state.world) )
                 return;
         }
@@ -733,6 +747,9 @@ SKI.run_trigger = function() {
     else
     {
         SKI.run_update(cmd);
+        if ( SKI.run_state.end_game )
+            return;
+
         SKI.printSlope(SKI.run_state.world);
         
         // If we are jumping, just finish the line.  Otherwise, check for
@@ -740,6 +757,9 @@ SKI.run_trigger = function() {
         while ( SKI.run_state.player.jump_count >= 0 )
         {
             SKI.run_update(null);
+            if ( SKI.run_state.end_game )
+                return
+
             SKI.printSlope(SKI.run_state.world);
             // Don't check for obstacles till the end
         }
@@ -761,6 +781,7 @@ SKI.run = function(div) {
         div = $(document.body);
 
     SKI.run_state.repeat = 1;
+    SKI.run_state.end_game = false;
     SKI.run_state.command = null;
     SKI.run_state.loop_gaurd = 0;
     SKI.run_state.world = new SKI.SkiWorld();
