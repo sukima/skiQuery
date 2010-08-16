@@ -115,7 +115,58 @@ SKI.exists = function(X) {
 
 // Function: show_doc() {{{2
 SKI.show_doc = function() {
-    // TODO:
+    var doc = $("<div id=\"ski-manual\" />");
+    doc.append("<tt />");
+    var str = "";
+    str += "This is ski " + SKI.portVersion + ", designed by Mark Stevans, ported to python by Eric S. Raymond.<br />";
+    str += "jQuery port by Devin Weaver, version " + SKI.version + "<br />";
+    str += "You are hurtling down a ski slope in reverse, trying to evade the Yeti.<br />";
+    str += "Expanded manual available <a href=\"http://catb.org/~esr/ski/ski.html\">online</a>.<br />";
+    str += "Available commands are:<br />";
+    str += "<br />";
+    $("tt", doc).append(str);
+
+    str = "";
+    str += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">";
+    str += "<tr><td>l = turn left</td><td>r = turn right</td></tr>";
+    str += "<tr><td>j = jump</td><td>h = hop</td></tr>";
+    str += "<tr><td>t = teleport</td><td>Enter = keep skiing</td></tr>";
+    str += "<tr><td>i = launch ICBM</td><td>d = summon Fire Demon</td></tr>";
+    str += "<tr><td colspan=\"2\">&nbsp;</td></tr>";
+    str += "<tr><td colspan=\"2\">! = interpret line as shell command and execute.</td></tr>";
+    str += "<tr><td colspan=\"2\">? = print this help message.</td></tr>";
+    str += "</table><br />";
+    $("tt", doc).append(str);
+
+    str = "";
+    str += "<dl><dt>Terrain types:</dt>";
+    str += "<dd>" + SKI.colorize(SKI.rep.snow) + " = snow</dd>";
+    str += "<dd>" + SKI.colorize(SKI.rep.tree) + " = tree</dd>";
+    str += "<dd>" + SKI.colorize(SKI.rep.ground) + " = bare ground</dd>";
+    str += "<dd>" + SKI.colorize(SKI.rep.ice) + " = ice</dd>";
+    str += "<dt>Creatures:</dt>";
+    str += "<dd>" + SKI.colorize(SKI.rep.player) + " = player</dd>";
+    str += "<dd>" + SKI.colorize(SKI.rep.yeti) + " = yeti</dd>";
+    str += "<dd>" + SKI.colorize(SKI.rep.icbm) + " = ICBM</dd>";
+    str += "<dd>" + SKI.colorize(SKI.rep.demon) + " = fire demon</dd>";
+    str += "</dl>";
+    $("tt", doc).append(str);
+
+    var input = $("<input type=\"button\" />");
+    input.click(function() {
+        doc.hide();
+    });
+
+    doc.append(input);
+
+    if ( false )
+    {
+        // TODO: jQuery-ui popup
+    }
+    else
+    {
+        SKI.print(doc);
+    }
 };
 
 // Function: console(cmdline) {{{2
@@ -123,15 +174,14 @@ SKI.console = function(cmdline) {
     // TODO:
 };
 
-// Function: cmd_prompt(p) {{{2
-SKI.cmd_prompt = function(p) {
-    // TODO:
-};
 
 // Function: print(msg) {{{2
 SKI.print = function(msg) {
     if ( SKI.exists(SKI.run_state.console) )
-        SKI.run_state.console.append("<span class=\"ski-text\">" + msg + "</span><br />");
+    {
+        SKI.run_state.console.append("<span class=\"ski-text\" />");
+        $("span.ski-text:last", SKI.run_state.console).append(msg);
+    }
 };
 
 // Function: printSlope(line) {{{2
@@ -177,6 +227,17 @@ SKI.colorize = function(picture) {
     // Colorize special characters in a display list.
     // TODO:
     return picture;
+};
+
+// Function: checkJQuery() {{{2
+SKI.checkJQuery = function() {
+    if ( !SKI.exists(jQuery) )
+    {
+        var fileref=document.createElement('script');
+        fileref.setAttribute("type", "text/javascript");
+        fileref.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js");
+        document.getElementsByTagName("head")[0].appendChild(fileref);
+    }
 };
 
 
@@ -488,7 +549,7 @@ SKI.SkiPlayer = function() {
         var degree = severity + SKI.random(0, SKI.injury_randomness - 1);
 
         // Print a message indicating the termination of the game.
-        SKI.cmd_prompt("!");
+        SKI.printPrompt("!");
         SKI.print(msg + "  " + SKI.SkiPlayer.injuries[degree]);
     
         // Print the statistics of the game.
@@ -694,6 +755,8 @@ SKI.run_trigger = function() {
 
 // Function: run() {{{2
 SKI.run = function(div) {
+    SKI.checkJQuery();
+
     if ( !SKI.exists(div) )
         div = $(document.body);
 
