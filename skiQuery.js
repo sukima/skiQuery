@@ -216,7 +216,12 @@ SKI.printInputPrompt = function() {
 // JavaScript has no exit/run loop since it is event based.
 SKI.exit = function() {
     SKI.run_state.end_game = true;
-    SKI.run_state.input.remove();
+
+    // Do a bad hack to force the browser to scroll to the bottom when game
+    // ends by giving focus to the input box and then removing it.
+    SKI.run_state.console.append(SKI.run_state.input);
+    SKI.run_state.input.removeAttr("disabled").focus().remove();
+
     return false;
 };
 
