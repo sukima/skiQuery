@@ -154,20 +154,6 @@ SKI.show_doc = function() {
     str += "</tr></table><br />";
     $("tt", doc).append(str);
 
-    /*
-    if ( false )
-    {
-        // TODO: jQuery-ui popup
-
-        var input = $("<input type=\"button\" />");
-        input.click(function() {
-            doc.hide();
-        });
-
-        doc.append(input);
-    }
-    else
-        */
     SKI.print(doc, true);
 };
 
