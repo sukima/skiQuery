@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-type" content="text/html; charset=iso-8859-1" />
+        <meta http-equiv="Content-Language" content="en-us" />
+        <meta name="viewport" content="initial-scale=1.0" />
+        <!-- <link href="site.css" rel="StyleSheet" type="text/css" media="screen" /> -->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"> </script>
+        <script src="skiQuery.js" type="text/javascript"> </script>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                SKI.run($("#game"));
+            });
+        </script>
+
+    </head>
+
+    <body>
+        <h3>ski, a fun and silly game</h3>
+        <p>Imagine you are skiing down an infinite slope, facing such hazards
+        as trees, ice, bare ground, and the man-eating Yeti!  Unfortunately,
+        you have put your jet-powered skis on backwards, so you can't see ahead
+        where you are going; only behind where you have been.  However, you can
+        turn to either side, jump or hop through the air, teleport through
+        hyperspace, launch nuclear ICBMs, and cast spells to call the Fire
+        Demon.  And since the hazards occur in patches, you can skillfully
+        outmaneuver them.  A fun and very silly game that proves you don't need
+        fancy graphical user interfaces to have a good time.</p>
+        <p>This is a Python reimplementation of a C game from 1990, with
+        on-line help added.  The original was by Mark Stevans, this
+        implementation is released under open-source terms by Eric S.
+        Raymond.</p>
+        <p>The internals of this game are actually kind of interesting.  The
+        terrain generator is a simple cellular automaton that generates crude
+        2D fractals.</p>
+        <p>See <a href="http://www.catb.org/~esr/ski/">http://www.catb.org/~esr/ski/</a>
+        for updates and related resources.</p>
+        <p>This has been ported over to JavaScript by Devin Weaver using the
+        jQuery library. This can easily be added to any website as a stand
+        alown or as an easter egg embedded into a div. See the
+        <a href="http://github.com/sukima/skiQuery">project page</a> for
+        the latest information concerning bugs and news.</p>
+        <h3>Demo</h3>
+        <div id="game"></div>
+    </body>
+</html>
+
+<!-- Modeline for ViM {{{
+vim:set et ts=4:
+vim600:fdm=marker fdl=0 fdc=3:
+}}} -->
+
