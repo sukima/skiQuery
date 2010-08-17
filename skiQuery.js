@@ -84,14 +84,15 @@ SKI.severe_injury               = 6
 SKI.injury_randomness   = 6
 
 SKI.colordict = {
-    snow:    'black',
-    tree:    'green',
-    player:  'magenta',
-    ground:  'yellow',
-    ice:     'cyan',
-    yeti:    'blue',
-    icbm:    'magenta',
-    demon:   'red'
+    snow:       'black',
+    tree:       'green',
+    player:     'magenta',
+    ground:     'yellow',
+    ice:        'cyan',
+    yeti:       'blue',
+    icbm:       'magenta',
+    demon:      'red',
+    background: 'lightgrey'
 };
 
 
@@ -777,6 +778,8 @@ SKI.run = function(div) {
     if ( !SKI.exists(div) )
         div = $(document.body);
 
+    div.css("background-color", SKI.colordict['background']);
+
     SKI.run_state.repeat = 1;
     SKI.run_state.end_game = false;
     SKI.run_state.command = null;
@@ -790,6 +793,7 @@ SKI.run = function(div) {
     SKI.run_state.ski_slope = $("<ol id=\"ski-slope\" />");
     // Create the input text field.
     SKI.run_state.input = $("<input id=\"ski-input\" type=\"text\" size=\"3\" />");
+    SKI.run_state.input.css("background-color", SKI.colordict['background']);
     SKI.run_state.input.keypress(function (event) {
         if ( event.keyCode == "13" )
         {
