@@ -122,7 +122,7 @@ SKI.show_doc = function() {
     str += "This is ski " + SKI.portVersion + ", designed by Mark Stevans, ported to python by Eric S. Raymond.<br />";
     str += "jQuery port by Devin Weaver, version " + SKI.version + "<br />";
     str += "You are hurtling down a ski slope in reverse, trying to evade the Yeti.<br />";
-    str += "Expanded manual available <a href=\"http://catb.org/~esr/ski/ski.html\">online</a>.<br />";
+    str += "Expanded manual available <a target=\"_blank\" href=\"http://catb.org/~esr/ski/ski.html\">online</a>.<br />";
     str += "Available commands are:<br />";
     str += "<br />";
     $("tt", doc).append(str);
@@ -216,7 +216,12 @@ SKI.printInputPrompt = function() {
 // JavaScript has no exit/run loop since it is event based.
 SKI.exit = function() {
     SKI.run_state.end_game = true;
-    SKI.run_state.input.remove();
+
+    // Do a bad hack to force the browser to scroll to the bottom when game
+    // ends by giving focus to the input box and then removing it.
+    SKI.run_state.console.append(SKI.run_state.input);
+    SKI.run_state.input.removeAttr("disabled").focus().remove();
+
     return false;
 };
 
