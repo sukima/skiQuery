@@ -84,7 +84,7 @@ SKI.severe_injury               = 6
 SKI.injury_randomness   = 6
 
 SKI.colordict = {
-    snow:    'white',
+    snow:    'black',
     tree:    'green',
     player:  'magenta',
     ground:  'yellow',
@@ -139,17 +139,19 @@ SKI.show_doc = function() {
     $("tt", doc).append(str);
 
     str = "";
-    str += "<dl><dt>Terrain types:</dt>";
-    str += "<dd>" + SKI.colorize(SKI.rep.snow) + " = snow</dd>";
-    str += "<dd>" + SKI.colorize(SKI.rep.tree) + " = tree</dd>";
-    str += "<dd>" + SKI.colorize(SKI.rep.ground) + " = bare ground</dd>";
-    str += "<dd>" + SKI.colorize(SKI.rep.ice) + " = ice</dd>";
-    str += "<dt>Creatures:</dt>";
-    str += "<dd>" + SKI.colorize(SKI.rep.player) + " = player</dd>";
-    str += "<dd>" + SKI.colorize(SKI.rep.yeti) + " = yeti</dd>";
-    str += "<dd>" + SKI.colorize(SKI.rep.icbm) + " = ICBM</dd>";
-    str += "<dd>" + SKI.colorize(SKI.rep.demon) + " = fire demon</dd>";
-    str += "</dl>";
+    str += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr>";
+    str += "<td>Terrain types: &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.snow) + " = snow &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.tree) + " = tree &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.ground) + " = bare ground &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.ice) + " = ice &nbsp; </td>";
+    str += "</tr><tr>";
+    str += "<td>Creatures: &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.player) + " = player &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.yeti) + " = yeti &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.icbm) + " = ICBM &nbsp; </td>";
+    str += "<td>" + SKI.colorize(SKI.rep.demon) + " = fire demon &nbsp; </td>";
+    str += "</tr></table><br />";
     $("tt", doc).append(str);
 
     /*
@@ -231,11 +233,20 @@ SKI.exit = function() {
     return false;
 };
 
-// Function: colorize(picture) {{{2
-SKI.colorize = function(picture) {
+// Function: colorize(rep) {{{2
+SKI.colorize = function(rep) {
     // Colorize special characters in a display list.
-    // TODO:
-    return picture;
+
+    // JavaScript doesn't do reverse look-ups of hashes. Since this requires a
+    // looping through the hash we will do so here and cache the result. Lazy
+    // loading.
+    if ( !SKI.exists(SKI.colordict[rep]) )
+    {
+        for (i in SKI.rep)
+            SKI.colordict[SKI.rep[i]] = SKI.colordict[i];
+    }
+
+    return "<span style=\"color:" + SKI.colordict[rep] + "\">" + rep + "</span>";
 };
 
 // Function: checkJQuery() {{{2
