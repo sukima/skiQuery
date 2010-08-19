@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+        <title>skiQuery Easter Egg Example</title>
+        <meta http-equiv="Content-type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="Content-Language" content="en-us" />
+        <meta name="viewport" content="initial-scale=1.0" />
+        <!-- <link href="site.css" rel="StyleSheet" type="text/css" media="screen" /> -->
+        <style type="text/css">
+            /* Z-index of #mask must lower than #boxes .window */  
+            #mask {  
+              position:absolute;  
+              z-index:9000;  
+              background-color:#000;  
+              display:none;  
+            }  
+                
+            #boxes .window {  
+              position:absolute;  
+              width:660px;  
+              height:400px;  
+              overflow: scroll;
+              display:none;  
+              z-index:9999;  
+              padding:20px;  
+            }  
+              
+              
+            /* Customize your modal window here, you can add background image too */  
+            #boxes #dialog {  
+              width:620px;   
+              height:400px;  
+            }  
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript"></script>
+        <script src="skiQuery.js" type="text/javascript"></script>
+        <script src="http://gist.github.com/raw/536722/openDialog.js" type="text/javascript"></script>
+        <script src="http://gist.github.com/raw/536722/easteregg.js" type="text/javascript"></script>
+    </head>
+
+    <body>
+        <h1>Konami Code Example</h1>
+        <p>This page uses the
+        <a href="http://en.wikipedia.org/wiki/Konami_Code">Konami Code</a> to
+        spawn the game. Demo available here by entering the Konami Code</p>
+        <p><span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">↑</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">↑</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">↓</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">↓</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">←</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">→</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">←</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">→</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">B</span> <span class="keyboard-key" style="border: 0.2em outset #cecbc7; background: #f0ece8; padding: 0 0.4em 0.1em 0.3em; font-size: 0.8em; white-space: nowrap;">A</span></p>
+        <p>It needs a div and the following code in the
+        <code>$(document).ready()</code> section:</p>
+        <script src="http://gist.github.com/536722.js?file=easteregg.js"></script>
+        <div id="boxes">  
+            <!-- #customize your modal window here -->  
+            <div id="game" class="window"></div>  
+            <!-- Do not remove div#mask, because you'll need it to fill the whole screen -->    
+            <div id="mask"></div>  
+        </div>  
+    </body>
+</html>
+
+<!-- Modeline for ViM {{{
+vim:set et ts=4:
+vim600:fdm=marker fdl=0 fdc=3:
+}}} -->
+
