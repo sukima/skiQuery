@@ -116,7 +116,7 @@ SKI.exists = function(X) {
 
 // Function: show_doc() {{{2
 SKI.show_doc = function() {
-    var doc = $("<div id=\"ski-manual\" />");
+    var doc = jQuery("<div id=\"ski-manual\" />");
     doc.append("<tt />");
     var str = "";
     str += "This is ski " + SKI.portVersion + ", designed by Mark Stevans, ported to python by Eric S. Raymond.<br />";
@@ -125,7 +125,7 @@ SKI.show_doc = function() {
     str += "Expanded manual available <a target=\"_blank\" href=\"http://catb.org/~esr/ski/ski.html\">online</a>.<br />";
     str += "Available commands are:<br />";
     str += "<br />";
-    $("tt", doc).append(str);
+    jQuery("tt", doc).append(str);
 
     str = "";
     str += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">";
@@ -137,7 +137,7 @@ SKI.show_doc = function() {
     str += "<tr><td colspan=\"2\">! = interpret line as shell command and execute.</td></tr>";
     str += "<tr><td colspan=\"2\">? = print this help message.</td></tr>";
     str += "</table><br />";
-    $("tt", doc).append(str);
+    jQuery("tt", doc).append(str);
 
     str = "";
     str += "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr>";
@@ -153,7 +153,7 @@ SKI.show_doc = function() {
     str += "<td>" + SKI.colorize(SKI.rep.icbm) + " = ICBM &nbsp; </td>";
     str += "<td>" + SKI.colorize(SKI.rep.demon) + " = fire demon &nbsp; </td>";
     str += "</tr></table><br />";
-    $("tt", doc).append(str);
+    jQuery("tt", doc).append(str);
 
     SKI.print(doc, true);
 };
@@ -172,12 +172,12 @@ SKI.print = function(msg,inline) {
     if ( inline && SKI.run_state.ski_slope )
     {
         SKI.run_state.ski_slope.append("<span class=\"ski-text\" />");
-        $("span.ski-text:last", SKI.run_state.ski_slope).append(msg);
+        jQuery("span.ski-text:last", SKI.run_state.ski_slope).append(msg);
     }
     else if ( SKI.exists(SKI.run_state.console) )
     {
         SKI.run_state.console.append("<span class=\"ski-text\" />");
-        $("span.ski-text:last", SKI.run_state.console).append(msg);
+        jQuery("span.ski-text:last", SKI.run_state.console).append(msg);
     }
 };
 
@@ -196,7 +196,7 @@ SKI.printPrompt = function(p) {
     if ( !SKI.exists(p) )
         p = '?';
     if ( SKI.exists(SKI.run_state.ski_slope) )
-        $(".ski-prompt:last", SKI.run_state.ski_slope).html(p);
+        jQuery(".ski-prompt:last", SKI.run_state.ski_slope).html(p);
 };
 
 //Function: printInputPrompt() {{{2
@@ -204,7 +204,7 @@ SKI.printInputPrompt = function() {
     if ( SKI.exists(SKI.run_state.input) )
     {
         // Will move the input field to the correct place.
-        $(".ski-prompt-input:last").append(SKI.run_state.input);
+        jQuery(".ski-prompt-input:last").append(SKI.run_state.input);
         // Reenable the field.
         SKI.run_state.input.removeAttr("disabled");
         SKI.run_state.input.val("").focus();
@@ -729,7 +729,7 @@ SKI.run_trigger = function() {
     var cmd = SKI.run_state.input.val();
 
     // Freeze former command.
-    $(".ski-prompt-input:last").append(cmd);
+    jQuery(".ski-prompt-input:last").append(cmd);
     
     // Repeat logic
     if ( cmd > 0 ) // Check if number
@@ -781,7 +781,7 @@ SKI.run = function(div) {
     SKI.checkJQuery();
 
     if ( !SKI.exists(div) )
-        div = $(document.body);
+        div = jQuery(document.body);
 
     div.css("background-color", SKI.colordict['background']);
 
@@ -793,11 +793,11 @@ SKI.run = function(div) {
     SKI.run_state.player = new SKI.SkiPlayer();
 
     // Create the <pre/> for the text output.
-    SKI.run_state.console = $("<tt id=\"ski-console\" />");
+    SKI.run_state.console = jQuery("<tt id=\"ski-console\" />");
     // Create the <ol/> for the slope text.
-    SKI.run_state.ski_slope = $("<ol id=\"ski-slope\" />");
+    SKI.run_state.ski_slope = jQuery("<ol id=\"ski-slope\" />");
     // Create the input text field.
-    SKI.run_state.input = $("<input id=\"ski-input\" type=\"text\" size=\"3\" />");
+    SKI.run_state.input = jQuery("<input id=\"ski-input\" type=\"text\" size=\"3\" />");
     SKI.run_state.input.css("background-color", SKI.colordict['background']);
     SKI.run_state.input.keypress(function (event) {
         if ( event.keyCode == "13" )
@@ -807,7 +807,7 @@ SKI.run = function(div) {
         }
     });
 
-    $(div).empty().append(SKI.run_state.console);
+    jQuery(div).empty().append(SKI.run_state.console);
 
     SKI.print("SKI!  Version " + SKI.portVersion + ". Type ? for help.");
     SKI.print("skiQuery port version " + SKI.version + " by Devin Weaver");
