@@ -1,18 +1,20 @@
-# This is ski %s, designed by Mark Stevans, ported by Eric S. Raymond.
-# You are hurtling down a ski slope in reverse, trying to evade the Yeti.
-# Available commands are:
-#
-#  l = turn left            r = turn right
-#  j = jump                 h = hop
-#  t = teleport             Enter = keep skiing
-#  i = launch ICBM          d = summon Fire Demon
-#
-#  ! = interpret line as shell command and execute.
-#  ? = print this help message.
+###
+This is ski %s, designed by Mark Stevans, ported by Eric S. Raymond.
+You are hurtling down a ski slope in reverse, trying to evade the Yeti.
+Available commands are:
 
-$ = jQuery
+ l = turn left            r = turn right
+ j = jump                 h = hop
+ t = teleport             Enter = keep skiing
+ i = launch ICBM          d = summon Fire Demon
 
-SKI =
+ ! = interpret line as shell command and execute.
+ ? = print this help message.
+###
+
+$ = if jQuery? then jQuery else {}
+
+window.SKI =
   version: '1.0'
   portVersion: '6.4'
 
@@ -232,18 +234,18 @@ class SKI.SkiWorld
   #    [3] appearance of holes in solid hazards (this allows the Yeti
   #        to work his way through forests)
 
+  # Instance variables {{{2
+  prob_tree: [0.0, 30.0, 70.0, 90.0]
+  prob_ice: [0.0, 30.0, 70.0, 90.0]
+  prob_ground: [0.0, 30.0, 70.0, 90.0]
+
+  level_num: 0
+  yeti: null
+  icbm_pos: null
+  demon_pos: null
+
   # Constructor {{{2
   constructor: ->
-    # Instance variables
-    @prob_tree = [0.0, 30.0, 70.0, 90.0]
-    @prob_ice = [0.0, 30.0, 70.0, 90.0]
-    @prob_ground = [0.0, 30.0, 70.0, 90.0]
-
-    @level_num = 0
-    @yeti = null
-    @icbm_pos = null
-    @demon_pos = null
-
     # Initialize the line with snow.
     @slope = new Array(SKI.line_len)
     @slope[i] = SKI.rep.snow for i in [0..SKI.line_len]
@@ -307,7 +309,7 @@ class SKI.SkiWorld
         ((i isnt @player_pos) or (num_nearby_trees > 0))
           tmp_slope[i] = SKI.rep.tree
       else if SKI.percent(@prob_ice[num_nearby_ice]) and \
-        ((i isnt @player_pos) or (num_nearby_ice > 0)) )
+        ((i isnt @player_pos) or (num_nearby_ice > 0))
           tmp_slope[i] = SKI.rep.ice
       else if SKI.percent(@prob_ground[num_nearby_ground]) and \
         ((i isnt @player_pos) or (num_nearby_ground > 0))
@@ -315,447 +317,361 @@ class SKI.SkiWorld
       else
         tmp_slope[i] = SKI.rep.snow
 
-      @slope = tmp_slope
+    @slope = tmp_slope
 
-    # Function: update_level(player) {{{2
-    this.update_level = function(player)  {
-        # Go to the next level, and move the player.
-        that.level_num++;
+  # Function: update_level(player) {{{2
+  update_level: (player) ->
+    # Go to the next level, and move the player.
+    @level_num++
 
-        # Figure out the new player position based on a modulo
-        # addition.  Note that we must add the line length into the
-        # expression before taking the modulus to make sure that we
-        # are not taking the modulus of a negative integer.
-        that.player_pos = ((that.player_pos + player.player_speed +
-            that.slope.length) % that.slope.length);
+    # Figure out the new player position based on a modulo
+    # addition.  Note that we must add the line length into the
+    # expression before taking the modulus to make sure that we
+    # are not taking the modulus of a negative integer.
+    @player_pos = (@player_pos + player.player_speed + @slope.length) % @slope.length
 
-        # Generate the updated slope.
-        that.gen_next_slope();
+    # Generate the updated slope.
+    @gen_next_slope()
 
-        # If there is no Yeti, one might be created.
-        if ( !SKI.exists(that.yeti) &&
-            SKI.percent(that.prob_yeti_appearance) )
-        {
-            # Make sure that the Yeti does not appear too
-            # close to the player.
-            while (true)
-            {
-                that.yeti = that.teleport();
-                if ( !that.nearby(that.yeti, SKI.min_yeti_appearance_distance) )
-                    break;
-            }
-        }
+    # If there is no Yeti, one might be created.
+    if not SKI.exists(@yeti) and SKI.percent(@prob_yeti_appearance)
+      # Make sure that the Yeti does not appear too
+      # close to the player.
+      while (true)
+        @yeti = @teleport();
+        break unless @nearby(@yeti, SKI.min_yeti_appearance_distance)
 
-        # Increase the initial appearance probabilities of all obstacles and
-        # the Yeti.
-        that.prob_tree[0] *= SKI.level_multiplier;
-        that.prob_ice[0] *= SKI.level_multiplier;
-        that.prob_ground[0] *= SKI.level_multiplier;
-        that.prob_yeti_appearance *= SKI.level_multiplier;
-    };
+      # Increase the initial appearance probabilities of all obstacles and
+      # the Yeti.
+      @prob_tree[0] *= SKI.level_multiplier
+      @prob_ice[0] *= SKI.level_multiplier
+      @prob_ground[0] *= SKI.level_multiplier
+      @prob_yeti_appearance *= SKI.level_multiplier
 
-    # Function: manipulate_objects(player) {{{2
-    this.manipulate_objects = function(player) {
-        # If there is a Yeti, the player's jet-powered skis may melt him,
-        # or he may spontaneously melt. Otherwise move him towards the player.
-        # If there is a tree in the way, the Yeti is blocked.
-        if ( SKI.exists(that.yeti) )
-        {
-            if ( (that.nearby(that.yeti)
-                    && SKI.percent(SKI.prob_skis_melt_yeti))
-                || SKI.percent(SKI.prob_yeti_melt) )
-            {
-                that.yeti = null;
-                player.num_snomen_melted++;
-            }
-        }
+  # Function: manipulate_objects(player) {{{2
+  manipulate_objects: (player) ->
+    # If there is a Yeti, the player's jet-powered skis may melt him,
+    # or he may spontaneously melt. Otherwise move him towards the player.
+    # If there is a tree in the way, the Yeti is blocked.
+    if SKI.exists(@yeti)
+      if (@nearby(@yeti) and SKI.percent(SKI.prob_skis_melt_yeti)) or SKI.percent(SKI.prob_yeti_melt)
+        @yeti = null
+        player.num_snomen_melted++
+    # Ignored if the yeti melted above
+    if SKI.exists(@yeti)
+      if @yeti < @player_pos
+        if @slope[@yeti + 1] != SKI.rep.tree
+          @yeti += 1
+      else
+        if @slope[@yeti - 1] != SKI.rep.tree
+          @yeti -= 1
 
-        if ( SKI.exists(that.yeti) )
-        {
-            if ( that.yeti < that.player_pos )
-            {
-                if ( that.slope[that.yeti + 1] != SKI.rep.tree )
-                    that.yeti += 1;
-            }
-            else
-            {
-                if ( that.slope[that.yeti - 1] != SKI.rep.tree )
-                    that.yeti -= 1;
-            }
-        }
+    # If there is an ICBM, handle it.
+    if SKI.exists(@icbm_pos)
+      # If there is a Yeti, move the ICBM towards him.  Else,
+      # self-destruct the ICBM.
+      if SKI.exists(@yeti)
+        if @icbm_pos < @yeti
+          @icbm_pos += SKI.icbm_speed
+        else
+          @icbm_pos -= SKI.icbm_speed
+      else
+        @icbm_pos = null
 
-        # If there is an ICBM, handle it.
-        if ( SKI.exists(that.icbm_pos) )
-        {
-            # If there is a Yeti, move the ICBM towards him.  Else,
-            # self-destruct the ICBM.
-            if ( SKI.exists(that.yeti) )
-            {
-                if ( that.icbm_pos < that.yeti )
-                    that.icbm_pos += SKI.icbm_speed;
-                else
-                    that.icbm_pos -= SKI.icbm_speed;
-            }
-            else
-                that.icbm_pos = null;
-        }
+    # If there is a fire demon on the level, handle it.
+    if SKI.exists(@demon_pos)
+      # If there is a Yeti on the current level, move the demon
+      # towards him.  Else, the demon might decide to leave.
+      if SKI.exists(@yeti)
+        if @demon_pos < @yeti
+          @demon_pos += SKI.demon_speed
+        else
+          @demon_pos -= SKI.demon_speed
+      else
+        if SKI.percent(25.0)
+          @demon_pos = null
 
-        # If there is a fire demon on the level, handle it.
-        if ( SKI.exists(that.demon_pos) )
-        {
-            # If there is a Yeti on the current level, move the demon
-            # towards him.  Else, the demon might decide to leave.
-            if ( SKI.exists(that.yeti) )
-            {
-                if ( that.demon_pos < that.yeti )
-                    that.demon_pos += SKI.demon_speed;
-                else
-                    that.demon_pos -= SKI.demon_speed;
-            }
-            else
-            {
-                if ( SKI.percent(25.0) )
-                    that.demon_pos = null;
-            }
-        }
+    # If there is a Yeti and an ICBM on the slope, the Yeti
+    # might get melted.
+    if SKI.exists(@yeti) and SKI.exists(@icbm_pos)
+      if Math.abs(@yeti - @icbm_pos) <= SKI.icbm_range
+        @icbm_pos = null
+        @yeti = null
+        player.num_snomen_melted += 1
 
-        # If there is a Yeti and an ICBM on the slope, the Yeti
-        # might get melted.
-        if ( SKI.exists(that.yeti) && SKI.exists(that.icbm_pos) )
-        {
-            if ( Math.abs(that.yeti - that.icbm_pos) <= SKI.icbm_range )
-            {
-                that.icbm_pos = null;
-                that.yeti = null;
-                player.num_snomen_melted += 1;
-            }
-        }
+    # If there is a Yeti and a fire demon, he might get melted.
+    if SKI.exists(@yeti) and SKI.exists(@demon_pos)
+      if Math.abs(@yeti - @demon_pos) <= 1
+        @yeti = null
+        player.num_snomen_melted += 1
 
-        # If there is a Yeti and a fire demon, he might get melted.
-        if ( SKI.exists(that.yeti) && SKI.exists(that.demon_pos) )
-        {
-            if ( Math.abs(that.yeti - that.demon_pos) <= 1 )
-            {
-                that.yeti = null;
-                player.num_snomen_melted += 1;
-            }
-        }
-    };
+  # Function: getPicture() {{{2
+  getPicture: ->
+    # Create a picture of the current level.
+    picture = @slope[..]
+    picture[@player_pos] = SKI.rep.player
+    picture[@yeti] = SKI.rep.yeti if SKI.exists(@yeti)
+    picture[@demon_pos] = SKI.rep.demon if SKI.exists(@demon_pos)
+    picture[@icbm_pos] = SKI.rep.icbm if SKI.exists(@icbm_pos)
+    picture
 
-    # Function: getPicture() {{{2
-    this.getPicture = function() {
-        # Create a picture of the current level.
-        var picture = that.slope.slice();
-        picture[that.player_pos] = SKI.rep.player;
-        if ( SKI.exists(that.yeti) )
-            picture[that.yeti] = SKI.rep.yeti;
-        if ( SKI.exists(that.demon_pos) )
-            picture[that.demon_pos] = SKI.rep.demon;
-        if ( SKI.exists(that.icbm_pos) )
-            picture[that.icbm_pos] = SKI.rep.icbm;
-        return picture;
-    };
+  # Function: toHTML() {{{2
+  toHTML: ->
+    html = for picture of @getPicture()
+      SKI.colorize(picture) 
+    html.join ','
 
-    # Function: toHTML() {{{2
-    this.toHTML = function() {
-        var picture = that.getPicture();
-        var html = "";
-        for (var i=0; i < picture.length; i++)
-        {
-            html += SKI.colorize(picture[i]);
-        }
-        return html;
-    };
-
-    # Function: toString() {{{2
-    this.toString = function() {
-        var picture = that.getPicture();
-        for (var i=0; i < picture.length; i++)
-        {
-            str += picture[i];
-        }
-        return str;
-    };
-    # }}}2
+  # Function: toString() {{{2
+  toString: ->
+    str = for picture of @getPicture()
+      picture
+    str.join ','
+  # }}}2
 
 
 # Class: SkiPlayer {{{1
-SKI.SkiPlayer = function() {
-    var that = this;
+class SKI.SkiPlayer
+  # Class variables {{{2
+  @injuries: [
+    "However, you escaped injury!"
+    "But you weren't hurt at all!"
+    "But you only got a few scratches."
+    "You received some cuts and bruises."
+    "You wind up with a concussion and some contusions."
+    "You now have a broken rib."
+    "Your left arm has been fractured."
+    "You suffered a broken ankle."
+    "You have a broken arm and a broken leg."
+    "You have four broken limbs and a cut!"
+    "You broke every bone in your body!"
+    "I'm sorry to tell you that you have been killed...."
+  ]
 
-    # Instance variables {{{2
-    this.jump_count = -1;
-    this.num_snomen_melted = 0;
-	this.num_jumps_attempted = 0.0;
-	this.player_speed = 0;
-	this.meters_travelled = 0;
+  # Instance variables {{{2
+  jump_count: -1
+  num_snomen_melted: 0
+  num_jumps_attempted: 0.0
+  player_speed: 0
+  meters_travelled: 0
 
-    # Function: accident(msg, severity) {{{2
-    this.accident = function(msg, severity) {
-        # "accident()" is called when the player gets into an accident(),
-        # which ends the game.  "msg" is the description of the accident()
-        # type, and "severity" is the severity.  This function should never
-        # return. Compute the degree of the player's injuries.
-        var degree = severity + SKI.random(0, SKI.injury_randomness - 1);
+  # Function: accident(msg, severity) {{{2
+  accident: (msg, severity) ->
+    # "accident()" is called when the player gets into an accident(),
+    # which ends the game.  "msg" is the description of the accident()
+    # type, and "severity" is the severity.  This function should never
+    # return. Compute the degree of the player's injuries.
+    degree = severity + SKI.random(0, SKI.injury_randomness - 1)
 
-        # Print a message indicating the termination of the game.
-        SKI.printPrompt("!");
-        SKI.print(msg + "  " + SKI.SkiPlayer.injuries[degree]);
+    # Print a message indicating the termination of the game.
+    SKI.printPrompt "!"
+    SKI.print "#{msg}  #{SkiPlayer.injuries[degree]}"
     
-        # Print the statistics of the game.
-        SKI.print("You skiied " + that.meters_travelled +
-            " meters with " + that.num_jumps_attempted +
-            " jumps and melted " + that.num_snomen_melted +
-            ((that.num_snomen_melted != 1) ? " Yetis" : " Yeti") + ".");
+    # Print the statistics of the game.
+    SKI.print "You skiied #{@meters_travelled} meters with
+      #{@num_jumps_attempted} jumps and melted #{@num_snomen_melted}
+      #{if @num_snomen_melted > 1 then 'Yetis' else 'Yeti'}."
 
-        # Initially calculate the player's score based upon the number of
-        # meters travelled.
-        var score = that.meters_travelled * SKI.points_per_meter;
+    # Initially calculate the player's score based upon the number of
+    # meters travelled.
+    score = @meters_travelled * SKI.points_per_meter
 
-        # Add bonus points for the number of jumps completed.
-        score += that.num_jumps_attempted * SKI.points_per_jump;
+    # Add bonus points for the number of jumps completed.
+    score += @num_jumps_attempted * SKI.points_per_jump
 
-        # Add bonus points for each Yeti that melted during the course of
-        # the game.
-        score += that.num_snomen_melted * SKI.points_per_melted_yeti;
+    # Add bonus points for each Yeti that melted during the course of
+    # the game.
+    score += @num_snomen_melted * SKI.points_per_melted_yeti
 
-        # Subtract a penalty for the degree of injury experienced by the
-        # player.
-        score += degree * SKI.points_per_injury_degree;
+    # Subtract a penalty for the degree of injury experienced by the
+    # player.
+    score += degree * SKI.points_per_injury_degree
 
-        # Negative scores are just too silly.
-        if ( score < 0 )
-            score = 0;
+    # Negative scores are just too silly.
+    score = 0 if score < 0
 
-        # Print the player's score.
-        SKI.print("Your score for this run is " + score + ".");
+    # Print the player's score.
+    SKI.print "Your score for this run is #{score}."
 
-        # Exit the game with a code indicating successful completion.
-        return SKI.exit();
-    };
+    # Exit the game with a code indicating successful completion.
+    SKI.exit()
 
-    # Function: check_obstacles(world) {{{2
-    this.check_obstacles = function(world) {
-        # If we are just landing after a jump, we might fall down.
-        if ( (that.jump_count == 0) && SKI.percent(SKI.prob_bad_landing) )
-            return that.accident("Whoops!  A bad landing!", SKI.light_injury);
+  # Function: check_obstacles(world) {{{2
+  check_obstacles: (world) ->
+    # If we are just landing after a jump, we might fall down.
+    if (@jump_count == 0) and SKI.percent(SKI.prob_bad_landing)
+      return @accident("Whoops!  A bad landing!", SKI.light_injury)
 
-        # If there is a tree in our position, we might hit it.
-        if ( (world.terrain() == SKI.rep.tree) && SKI.percent(SKI.prob_hit_tree) )
-            return that.accident("Oh no!  You hit a tree!", SKI.severe_injury);
+    # If there is a tree in our position, we might hit it.
+    if (world.terrain() is SKI.rep.tree) and SKI.percent(SKI.prob_hit_tree)
+      return @accident("Oh no!  You hit a tree!", SKI.severe_injury)
 
-        # If there is bare ground under us, we might fall down.
-        if ( (world.terrain() == SKI.rep.ground) && SKI.percent(SKI.prob_fall_on_ground) )
-            return that.accident("You fell on the ground!", SKI.moderate_injury);
+    # If there is bare ground under us, we might fall down.
+    if (world.terrain() is SKI.rep.ground) and SKI.percent(SKI.prob_fall_on_ground)
+      return @accident("You fell on the ground!", SKI.moderate_injury)
 
-        # If we are on ice, we might slip.
-        if ( (world.terrain() == SKI.rep.ice) && SKI.percent(SKI.prob_slip_on_ice) )
-            return that.accident("Oops!  You slipped on the ice!", SKI.slight_injury);
+    # If we are on ice, we might slip.
+    if (world.terrain() is SKI.rep.ice) and SKI.percent(SKI.prob_slip_on_ice)
+      return @accident("Oops!  You slipped on the ice!", SKI.slight_injury)
 
-        # If there is a Yeti next to us, he may grab us.
-        if ( world.nearby(world.yeti) )
-            return that.accident("Yikes!  The Yeti's got you!", SKI.moderate_injury);
+    # If there is a Yeti next to us, he may grab us.
+    if world.nearby(world.yeti)
+      return @accident("Yikes!  The Yeti's got you!", SKI.moderate_injury)
 
-        return true;
-    };
+    true
 
-    # Function: update_player() {{{2
-    this.update_player = function() {
-        # Update state of player for current move.
-        that.meters_travelled += Math.abs(that.player_speed) + 1;
-        # If the player was jumping, decrement the jump count.
-        if ( that.jump_count >= 0 )
-            that.jump_count -= 1;
-    };
+  # Function: update_player() {{{2
+  update_player: ->
+    # Update state of player for current move.
+    @meters_travelled += Math.abs(@player_speed) + 1
+    # If the player was jumping, decrement the jump count.
+    @jump_count -= 1 if @jump_count >= 0
 
-    # Function: do_command(world, cmdline) {{{2
-    this.do_command = function(world, cmdline) {
-        # Print a prompt, and read a command.  Return True to advance game.
-        if ( !SKI.exists(cmdline) )
-            cmdline = " ";
-        switch ( cmdline.charAt(0).toUpperCase() )
-        {
-            case '?':
-                SKI.show_doc();
-                return false;
-            case '!':
-                SKI.console(cmdline.substring(1));
-                return false;
-            case 'R':  # Move right
-                if ( (world.terrain() != SKI.rep.ice)
-                        && (that.player_speed < SKI.max_horizontal_player_speed) )
-                    that.player_speed += 1;
-                return true;
-            case 'L':  # Move left
-                if ( (world.terrain() != SKI.rep.ice)
-                        && (that.player_speed > -SKI.max_horizontal_player_speed) )
-                    that.player_speed -= 1;
-                return true;
-            case 'J':  # Jump
-                that.jump_count = SKI.random(0, 5) + 4;
-                that.num_jumps_attempted += 1.0;
-                return true;
-            case 'H':  # Do a hop
-                that.jump_count = SKI.random(0, 2) + 2;
-                that.num_jumps_attempted += 0.5;
-                return true;
-            case 'T':  # Attempt teleportation
-                if ( SKI.percent(SKI.prob_bad_teleport) )
-                    return that.accident("You materialized 25 feet in the air!", SKI.slight_injury);
-                world.player_pos = world.teleport();
-                return true;
-            case 'I':  # Launch backpack ICBM
-                if ( SKI.percent(SKI.prob_bad_icbm) )
-                    return that.accident("Nuclear blast in your backpack!", SKI.severe_injury);
-                world.icbm_pos = world.player_pos;
-                return true;
-            case 'D':  # Incant spell for fire demon
-                if ( SKI.percent(SKI.prob_bad_spell) )
-                    return that.accident("A bad spell -- the demon grabs you!", SKI.moderate_injury);
-                world.demon_pos = world.teleport();
-                return true;
-            default:
-                # Any other command just advances
-                return true;
-        }
-    };
-};
+  # Function: do_command(world, cmdline) {{{2
+  do_command: (world, cmdline=" ") ->
+    # Print a prompt, and read a command.  Return True to advance game.
+    switch cmdline.charAt(0).toUpperCase()
+      when '?'
+        SKI.show_doc()
+        return false
+      when '!'
+        SKI.console(cmdline.substring(1))
+        return false
+      when 'R'  # Move right
+        if (world.terrain() isnt SKI.rep.ice) and (@player_speed < SKI.max_horizontal_player_speed)
+          @player_speed += 1
+          return true
+      when 'L'  # Move left
+        if (world.terrain() isnt SKI.rep.ice) and (@player_speed > -SKI.max_horizontal_player_speed)
+          @player_speed -= 1
+          return true
+      when 'J'  # Jump
+        @jump_count = SKI.random(0, 5) + 4
+        @num_jumps_attempted += 1.0
+        return true
+      when 'H'  # Do a hop
+        @jump_count = SKI.random(0, 2) + 2
+        @num_jumps_attempted += 0.5
+        return true
+      when 'T'  # Attempt teleportation
+        if SKI.percent(SKI.prob_bad_teleport)
+          return @accident("You materialized 25 feet in the air!", SKI.slight_injury)
+        world.player_pos = world.teleport()
+        return true
+      when 'I'  # Launch backpack ICBM
+        if SKI.percent(SKI.prob_bad_icbm)
+          return @accident("Nuclear blast in your backpack!", SKI.severe_injury)
+        world.icbm_pos = world.player_pos
+        return true
+      when 'D'  # Incant spell for fire demon
+        if SKI.percent(SKI.prob_bad_spell)
+          return @accident("A bad spell -- the demon grabs you!", SKI.moderate_injury)
+        world.demon_pos = world.teleport()
+        return true
+      else
+        # Any other command just advances
+        return true
 
-# Class variables {{{2
-SKI.SkiPlayer.injuries = [
-    "However, you escaped injury!", 
-    "But you weren't hurt at all!", 
-    "But you only got a few scratches.", 
-    "You received some cuts and bruises.", 
-    "You wind up with a concussion and some contusions.", 
-    "You now have a broken rib.", 
-    "Your left arm has been fractured.",
-    "You suffered a broken ankle.",
-    "You have a broken arm and a broken leg.", 
-    "You have four broken limbs and a cut!", 
-    "You broke every bone in your body!", 
-    "I'm sorry to tell you that you have been killed...."];
 
 
 # Main run loop {{{1
 # These functions are public. Run state can be hacked. Play nice.
 # Cheating seems silly.
-SKI.run_state = {
-    repeat: 1,
-    end_game: false,
-    world: null,
-    player: null,
-    console: null,
-    ski_slope: null,
-    input: null,
-};
+SKI.run_state =
+  repeat: 1
+  end_game: false
+  world: null
+  player: null
+  console: null
+  ski_slope: null
+  input: null
 
 # Function: run_update(cmd) {{{2
-SKI.run_update = function(cmd) {
-    if ( !SKI.run_state.player.do_command(SKI.run_state.world, cmd) )
-        return false;
-    SKI.run_state.world.manipulate_objects(SKI.run_state.player);
-    SKI.run_state.world.update_level(SKI.run_state.player);
-    SKI.run_state.player.update_player();
-};
+SKI.run_update = (cmd) ->
+  unless SKI.run_state.player.do_command(SKI.run_state.world, cmd)
+    return false;
+  SKI.run_state.world.manipulate_objects(SKI.run_state.player)
+  SKI.run_state.world.update_level(SKI.run_state.player)
+  SKI.run_state.player.update_player()
 
 # Function: run_trigger() {{{2
-SKI.run_trigger = function() {
-    # Disable field to prevent further input.
-    SKI.run_state.input.attr("disabled","disabled");
+SKI.run_trigger = ->
+  # Disable field to prevent further input.
+  SKI.run_state.input.attr("disabled","disabled")
 
-    var cmd = SKI.run_state.input.val();
+  cmd = SKI.run_state.input.val()
 
-    # Freeze former command.
-    $(".ski-prompt-input:last").append(cmd);
+  # Freeze former command.
+  $(".ski-prompt-input:last").append(cmd)
     
-    # Repeat logic
-    if ( cmd > 0 ) # Check if number
-    {
-        cmd = cmd * 1; # Convert to number
-        for (var x=0; x < cmd; x++)
-        {
-            SKI.run_update(null);
-            if ( SKI.run_state.end_game )
-                return
+  # Repeat logic
+  if cmd > 0 # Check if number
+    cmd = cmd * 1 # Convert to number
+    for x in [0..cmd]
+      SKI.run_update(null)
+      return if SKI.run_state.end_game
 
-            SKI.printSlope(SKI.run_state.world);
+      SKI.printSlope(SKI.run_state.world)
 
-            if ( !SKI.run_state.player.check_obstacles(SKI.run_state.world) )
-                return;
-        }
-    }
-    else
-    {
-        SKI.run_update(cmd);
-        if ( SKI.run_state.end_game )
-            return;
+      return unless SKI.run_state.player.check_obstacles(SKI.run_state.world)
+  else
+    SKI.run_update(cmd)
+    return if SKI.run_state.end_game
 
-        SKI.printSlope(SKI.run_state.world);
+    SKI.printSlope(SKI.run_state.world)
         
-        # If we are jumping, just finish the line.  Otherwise, check for
-        # obstacles, and do a command.
-        while ( SKI.run_state.player.jump_count >= 0 )
-        {
-            SKI.run_update(null);
-            if ( SKI.run_state.end_game )
-                return
+    # If we are jumping, just finish the line.  Otherwise, check for
+    # obstacles, and do a command.
+    while SKI.run_state.player.jump_count >= 0
+      SKI.run_update(null);
+      return if SKI.run_state.end_game
 
-            SKI.printSlope(SKI.run_state.world);
-            # Don't check for obstacles till the end
-        }
+      SKI.printSlope(SKI.run_state.world)
+      # Don't check for obstacles till the end
 
-        if ( !SKI.run_state.player.check_obstacles(SKI.run_state.world) )
-            return;
-    }
+    return unless SKI.run_state.player.check_obstacles(SKI.run_state.world)
 
-    # Turn is done.
-    SKI.printPrompt();
-    SKI.printInputPrompt();
-};
+  # Turn is done.
+  SKI.printPrompt()
+  SKI.printInputPrompt()
 
 # Function: run() {{{2
-SKI.run = function(div) {
-    SKI.checkJQuery();
+SKI.run = (div) ->
+  SKI.checkJQuery()
 
-    if ( !SKI.exists(div) )
-        div = $(document.body);
+  unless SKI.exists(div)
+    div = $(document.body)
 
-    div.css("background-color", SKI.colordict['background']);
+    div.css("background-color", SKI.colordict['background'])
 
-    SKI.run_state.repeat = 1;
-    SKI.run_state.end_game = false;
-    SKI.run_state.command = null;
-    SKI.run_state.loop_gaurd = 0;
-    SKI.run_state.world = new SKI.SkiWorld();
-    SKI.run_state.player = new SKI.SkiPlayer();
+    SKI.run_state.repeat = 1
+    SKI.run_state.end_game = false
+    SKI.run_state.command = null
+    SKI.run_state.loop_gaurd = 0
+    SKI.run_state.world = new SKI.SkiWorld()
+    SKI.run_state.player = new SKI.SkiPlayer()
 
     # Create the <pre/> for the text output.
-    SKI.run_state.console = $("<tt id=\"ski-console\" />");
+    SKI.run_state.console = $("<tt id=\"ski-console\" />")
     # Create the <ol/> for the slope text.
-    SKI.run_state.ski_slope = $("<ol id=\"ski-slope\" />");
+    SKI.run_state.ski_slope = $("<ol id=\"ski-slope\" />")
     # Create the input text field.
-    SKI.run_state.input = $("<input id=\"ski-input\" type=\"text\" size=\"3\" />");
-    SKI.run_state.input.css("background-color", SKI.colordict['background']);
-    SKI.run_state.input.keypress(function (event) {
-        if ( event.keyCode == "13" )
-        {
-            event.preventDefault();
-            SKI.run_trigger();
-        }
-    });
+    SKI.run_state.input = $("<input id=\"ski-input\" type=\"text\" size=\"3\" />")
+    SKI.run_state.input.css("background-color", SKI.colordict['background'])
+    SKI.run_state.input.keypress (event) ->
+      if event.keyCode is "13"
+        event.preventDefault()
+        SKI.run_trigger()
 
-    $(div).empty().append(SKI.run_state.console);
+    $(div).empty().append(SKI.run_state.console)
 
-    SKI.print("SKI!  Version " + SKI.portVersion + ". Type ? for help.");
-    SKI.print("skiQuery port version " + SKI.version + " by Devin Weaver");
+    SKI.print("SKI!  Version #{SKI.portVersion}. Type ? for help.")
+    SKI.print("skiQuery port version #{SKI.version} by Devin Weaver")
 
-    SKI.run_state.console.append(SKI.run_state.ski_slope);
+    SKI.run_state.console.append(SKI.run_state.ski_slope)
 
-    SKI.printSlope(SKI.run_state.world);
-    SKI.printPrompt();
-    SKI.printInputPrompt();
-};
+    SKI.printSlope(SKI.run_state.world)
+    SKI.printPrompt()
+    SKI.printInputPrompt()
 # }}}1
 
 # vim:set et sw=2 ts=2 fdm=marker:
