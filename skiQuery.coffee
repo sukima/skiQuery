@@ -417,15 +417,15 @@ class SKI.SkiWorld
 
   # Function: toHTML() {{{2
   toHTML: ->
-    html = for picture of @getPicture()
-      SKI.colorize(picture) 
-    html.join ','
+    html = ""
+    html += SKI.colorize(picture) for picture in @getPicture()
+    html
 
   # Function: toString() {{{2
   toString: ->
-    str = for picture of @getPicture()
-      picture
-    str.join ','
+    str = ""
+    str += picture for picture in @getPicture()
+    str
   # }}}2
 
 
@@ -658,7 +658,7 @@ SKI.run = (div) ->
     SKI.run_state.input = $("<input id=\"ski-input\" type=\"text\" size=\"3\" />")
     SKI.run_state.input.css("background-color", SKI.colordict['background'])
     SKI.run_state.input.keypress (event) ->
-      if event.keyCode is "13"
+      if event.keyCode is 13
         event.preventDefault()
         SKI.run_trigger()
 
