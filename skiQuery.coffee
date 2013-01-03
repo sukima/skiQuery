@@ -12,9 +12,10 @@ Available commands are:
  ? = print this help message.
 ###
 
-$ = if jQuery? then jQuery else {}
+$ = jQuery
+root = exports ? this
 
-window.SKI =
+SKI =
   version: '1.0'
   portVersion: '6.4'
 
@@ -673,5 +674,7 @@ SKI.run = (div) ->
     SKI.printPrompt()
     SKI.printInputPrompt()
 # }}}1
+
+root.SKI = SKI
 
 # vim:set et sw=2 ts=2 fdm=marker:
